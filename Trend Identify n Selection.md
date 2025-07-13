@@ -1,6 +1,6 @@
-# Quick Trend Identification & Trade Type Selection
+# Quick Trend Identification & Trade Type Selection (with Stock Futures)
 
-This guide extends "Trade Type Selection Based on Trend" by showing you how to quickly spot current market/sector/stock trends using simple, fast methods. Use this as a daily/real-time routine—most steps can be completed in a few minutes using charts, screeners, or your trading platform.
+This guide extends "Trade Type Selection Based on Trend" by showing you how to quickly spot current market/sector/stock trends using simple, fast methods—including when to consider **stock futures** trading. Use this as a daily/real-time routine—most steps can be completed in a few minutes using charts, screeners, or your trading platform.
 
 ---
 
@@ -24,6 +24,7 @@ This guide extends "Trade Type Selection Based on Trend" by showing you how to q
 ### Favourable Trades:
 - Intraday Buy (trend continuation)
 - Swing Long (hold for days)
+- **Stock Futures Buy** (for leverage/hedging when trend is strong and liquidity is high)
 - Option Buy (Call), Option Sell (Put, if IV is high)
 - Pyramiding (adding to winners)
 
@@ -49,6 +50,7 @@ This guide extends "Trade Type Selection Based on Trend" by showing you how to q
 ### Favourable Trades:
 - Intraday Sell (trend continuation)
 - Swing Short
+- **Stock Futures Sell** (for leverage/downside play if trend and futures liquidity permit)
 - Option Buy (Put), Option Sell (Call, if IV is high)
 - Avoid long trades, avoid bottom fishing
 
@@ -73,6 +75,7 @@ This guide extends "Trade Type Selection Based on Trend" by showing you how to q
 ### Favourable Trades:
 - Intraday range trade (buy support, sell resistance)
 - Option Sell (Strangle/Straddle for premium decay)
+- **Stock Futures:** Cautious short-duration trades near edges of range, with tight stops; generally, avoid futures in low volatility/range conditions unless using for hedges or advanced strategies.
 - Quick scalps; avoid holding for big moves
 
 ---
@@ -93,6 +96,7 @@ This guide extends "Trade Type Selection Based on Trend" by showing you how to q
 ### Favourable Trades:
 - Quick Intraday trades (small targets, tight stops)
 - Option Selling (if IV is extremely high and you manage risk)
+- **Stock Futures:** Only for experienced traders; use with tight stop losses and reduced position size—volatility can amplify both gains and losses.
 - Avoid swing/positional until volatility stabilizes
 - Avoid over-leveraging or trading against news
 
@@ -100,12 +104,22 @@ This guide extends "Trade Type Selection Based on Trend" by showing you how to q
 
 # Quick-Reference Table
 
-| Trend Type      | Chart Clues               | MA Setup             | RSI    | Volume         | Favourable Trades        |
-|-----------------|--------------------------|----------------------|--------|----------------|--------------------------|
-| Bullish         | Higher Highs/Lows         | 9>20>50 EMA (Up)     | >60    | Up on up moves | Buy, Swing Long, Calls   |
-| Bearish         | Lower Highs/Lows          | 9<20<50 EMA (Down)   | <40    | Up on down     | Sell, Swing Short, Puts  |
-| Sideways/Range  | Boxed in, no new hi/lo    | Flat 20/50 EMA       | 45–55  | Low overall    | Range, Option Sell       |
-| High Volatility | Big candles, whipsaws     | MAs noisy            | N/A    | Spike/Surge    | Quick trades, Option Sell|
+| Trend Type      | Chart Clues               | MA Setup             | RSI    | Volume         | Favourable Trades                                  |
+|-----------------|--------------------------|----------------------|--------|----------------|----------------------------------------------------|
+| Bullish         | Higher Highs/Lows         | 9>20>50 EMA (Up)     | >60    | Up on up moves | Buy, Swing Long, **Stock Futures Buy**, Calls      |
+| Bearish         | Lower Highs/Lows          | 9<20<50 EMA (Down)   | <40    | Up on down     | Sell, Swing Short, **Stock Futures Sell**, Puts    |
+| Sideways/Range  | Boxed in, no new hi/lo    | Flat 20/50 EMA       | 45–55  | Low overall    | Range, Option Sell, **Cautious Futures Scalp**     |
+| High Volatility | Big candles, whipsaws     | MAs noisy            | N/A    | Spike/Surge    | Quick trades, Option Sell, **Futures (tight SL!)** |
+
+---
+
+## Stock Futures: Best Practices
+
+- **Liquidity:** Only trade liquid futures (tight spreads, high OI/volume).
+- **Leverage:** Use sensible position sizing; leverage amplifies both gains and losses.
+- **SL & Risk:** Always use a stop loss; predefine max loss per trade and stick to it.
+- **Trend:** Align with prevailing trend for positional/swing; avoid counter-trend futures trades.
+- **Expiry Awareness:** Futures have expiry dates; be mindful of rollover and price convergence.
 
 ---
 
@@ -114,6 +128,7 @@ This guide extends "Trade Type Selection Based on Trend" by showing you how to q
 - **Charting Platform:** Use multi-timeframe view (15m/1h/daily).
 - **Screeners:**  
   - Top gainers/losers, volume spikes, RSI oversold/overbought.
+  - Futures-specific screeners for liquidity & open interest.
 - **Volatility Index:**  
   - India VIX (NSE), CBOE VIX (US).
 - **Market Breadth Widget:**  
@@ -126,14 +141,15 @@ This guide extends "Trade Type Selection Based on Trend" by showing you how to q
 1. **Check major indices:** Trend direction and volatility.
 2. **See sector performance:** Top/bottom sectors.
 3. **Pick 1–2 stocks per sector:** Check chart for trend clues above.
-4. **Confirm with 2–3 indicators (EMA, RSI, Volume).**
-5. **Match trade type:** 
-   - Trending? Go with the trend (buy/sell, swing/intraday).
+4. **Check futures liquidity, spreads, OI if considering stock future trades.**
+5. **Confirm with 2–3 indicators (EMA, RSI, Volume).**
+6. **Match trade type:**  
+   - Trending? Go with the trend (buy/sell, swing/intraday, futures).
    - Range? Range trade or option sell.
-   - Volatile? Quick trades or wait.
-6. **Log your findings in dashboard/journal.**
+   - Volatile? Quick trades, small size, or wait.
+7. **Log your findings in dashboard/journal.**
 
 ---
 
 **Tip:**  
-Save indicator templates on your charting tool for one-click multi-timeframe trend checks!
+Save indicator templates on your charting tool for one-click multi-timeframe trend checks, and maintain a watchlist of liquid futures stocks for quick action.
