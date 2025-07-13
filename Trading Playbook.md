@@ -1,4 +1,3 @@
-````markdown name=Strategy_Details.md
 # Trading Strategies: Detailed Playbook
 
 ## 1. Intraday
