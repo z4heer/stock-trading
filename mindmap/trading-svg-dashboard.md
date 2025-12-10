@@ -3,23 +3,9 @@
 ## Trading Vocabularies
 
 **Trading Vocabulary 1**  
-<img src="Trading Vocabulary.svg" alt="Trading Vocabulary 1" width="260">
-
-**Head & Shoulders**  
-<img src="charts/head-and-shoulders.svg" alt="Head and Shoulders pattern" width="260">
+<a href="Trading Vocabulary.svg" target="_blank" rel="noopener noreferrer">Trading Vocabulary 1</a>
 
 ---
-
-## Indicators
-
-**RSI Zones**  
-<img src="indicators/rsi-zones.svg" alt="RSI overbought/oversold" width="260">
-
-**MACD Crossover**  
-<img src="indicators/macd-crossover.svg" alt="MACD signal" width="260">
-
----
-
 ## Options Strategies
 
 **Iron Condor**  
