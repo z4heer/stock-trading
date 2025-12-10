@@ -3,7 +3,7 @@
 ## Trading Vocabularies
 
 **Trading Vocabulary 1**  
-<a href="https://raw.githubusercontent.com/z4heer/stock-trading/refs/heads/main/mindmap/Trading%20Vocabulary.svg" target="_blank" rel="noopener noreferrer">Trading Vocabulary 1</a>
+<a href="https://raw.githubusercontent.com/z4heer/stock-trading/refs/heads/main/mindmap/Trading%20Vocabulary.svg" target="_new" rel="noopener noreferrer">Trading Vocabulary 1</a>
 
 ---
 ## Options Strategies
