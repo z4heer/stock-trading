@@ -1,0 +1,119 @@
+# Trade Signals
+
+## Technical Indicators
+### Trend Indicators
+- Moving Average Crossover
+  - Golden Cross (50/200 SMA)
+  - Death Cross
+- MACD Crossover
+- Parabolic SAR Flip
+- ADX Trend Strength (>25)
+
+### Momentum Indicators
+- RSI Signals
+  - Oversold (<30)
+  - Overbought (>70)
+  - Divergence (Bullish/Bearish)
+- Stochastic Crossover
+  - %K/%D Cross
+  - Overbought/Oversold
+- CCI Extremes
+  - >+100 (Overbought)
+  - <-100 (Oversold)
+
+### Volatility Indicators
+- Bollinger Band Squeeze
+- Band Breakout (Upper/Lower)
+- ATR Spike
+- IV Rank (>70th percentile)
+
+## Chart Patterns
+### Reversal Patterns
+- Head & Shoulders
+- Double Top / Double Bottom
+- Triple Top / Triple Bottom
+- Rounding Top / Bottom
+
+### Continuation Patterns
+- Flags (Bull/Bear)
+- Pennants
+- Triangles
+  - Ascending
+  - Descending
+  - Symmetrical
+- Cup & Handle
+
+### Candlestick Patterns
+- Bullish
+  - Hammer
+  - Bullish Engulfing
+  - Morning Star
+  - Piercing Line
+- Bearish
+  - Hanging Man
+  - Bearish Engulfing
+  - Evening Star
+  - Shooting Star
+
+## Price Action Signals
+### Support & Resistance
+- Breakout + Retest
+- Bounce from S/R
+- False Breakout
+
+### Trend Signals
+- Higher Highs/Higher Lows (Bull)
+- Lower Highs/Lower Lows (Bear)
+- Channel Break
+
+### Volume Signals
+- Volume Breakout
+- Climax Volume
+- Divergence (Price vs Volume)
+
+## Fundamental Signals
+### Earnings & News
+- Earnings Beat/Miss
+- Guidance Upgrade/Downgrade
+- M&A Announcement
+- Dividend Declaration
+
+### Economic Data
+- CPI / Inflation Data
+- GDP Release
+- Interest Rate Decision
+- NFP / Employment Data
+
+## Options-Specific Signals
+### Option Chain Signals
+- Max Pain Level
+- PCR (Put-Call Ratio)
+  - High PCR (>1.2) Bearish
+  - Low PCR (<0.7) Bullish
+- OI Buildup (Call/Put Walls)
+
+### Greeks Signals
+- High IV (Volatility Play)
+- Theta Crush Setup
+- Delta Neutral Entry
+
+## Confirmation Signals
+### Multi-Timeframe
+- Daily Trend + 1H Entry
+- Weekly Support + Daily Bounce
+
+### Confluence
+- MA + RSI + Volume
+- Pattern + Indicator
+- S/R + Candlestick
+
+## Risk & Exit Signals
+### Stop Signals
+- Trendline Break
+- MA Death (Price below key MA)
+- Parabolic SAR Against
+
+### Profit Signals
+- Target 1/2/3 Hit
+- RSI Divergence
+- Trailing Stop Trigger
