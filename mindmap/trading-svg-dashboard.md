@@ -1,9 +1,9 @@
 # Trading SVG Dashboard
 
-## Price Patterns
+## Trading Vocabularies
 
-**Bull Flag**  
-<img src="charts/bull-flag.svg" alt="Bull Flag pattern" width="260">
+**Trading Vocabulary 1**  
+<img src="Trading Vocabulary.svg" alt="Trading Vocabulary 1" width="260">
 
 **Head & Shoulders**  
 <img src="charts/head-and-shoulders.svg" alt="Head and Shoulders pattern" width="260">
