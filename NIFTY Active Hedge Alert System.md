@@ -1,7 +1,260 @@
 # Strategy Name
 
 **NIFTY Active Hedge Alert System v1**
+---
+Here is the **exact step-by-step guide to implement the NIFTY hedge alert strategy in Streak (Zerodha)**. Follow this once, and it will automatically generate hedge alerts daily.
 
+---
+
+# PART 1: Login and open strategy builder
+
+Step 1
+Go to: [https://streak.tech](https://streak.tech)
+
+Step 2
+Click **Login with Zerodha**
+
+Step 3
+Enter Zerodha credentials and login
+
+Step 4
+Click **"Strategies"** from top menu
+
+Step 5
+Click **"Create Strategy"**
+
+---
+
+# PART 2: Basic strategy setup
+
+You will see a form. Fill like this:
+
+Strategy Name:
+NIFTY Active Hedge Alert v1
+
+Segment:
+NSE
+
+Instrument:
+Index
+
+Symbol:
+NIFTY 50
+
+Timeframe:
+15 minute
+
+Position type:
+Select → **No Position (Alerts only)**
+
+(This ensures Streak gives alert, not auto trade)
+
+Click → **Next**
+
+---
+
+# PART 3: Add ENTRY conditions
+
+Click → **Add Condition**
+
+Now add conditions one by one:
+
+---
+
+Condition 1:
+
+Indicator: Close
+Operator: crosses below
+Indicator: Exponential Moving Average
+Period: 20
+
+Click Save
+
+---
+
+Condition 2:
+
+Click Add Condition
+
+Indicator: Close
+Operator: less than
+Indicator: VWAP
+
+Click Save
+
+---
+
+Condition 3:
+
+Click Add Condition
+
+Indicator: RSI
+Period: 14
+Operator: less than
+Value: 45
+
+Click Save
+
+---
+
+Condition 4:
+
+Click Add Condition
+
+Indicator: Volume
+Operator: greater than
+Indicator: Simple Moving Average
+Period: 20
+
+Click Save
+
+---
+
+Make sure ALL conditions connected with AND
+
+---
+
+# PART 4: Add EXIT conditions
+
+Scroll down to Exit Conditions
+
+Click Add Condition
+
+Add:
+
+Condition 1:
+
+Close crosses above EMA(20)
+
+---
+
+Add Condition 2:
+
+RSI(14) greater than 55
+
+---
+
+Click Save
+
+---
+
+# PART 5: Save strategy
+
+Click:
+
+Save Strategy
+
+---
+
+# PART 6: Deploy strategy
+
+Now click:
+
+Deploy
+
+Select:
+
+Enable Alerts → YES
+
+Select Mode:
+
+Alerts Only
+
+Click Deploy
+
+---
+
+# PART 7: Enable mobile notification
+
+Step 1
+Open Streak mobile app
+
+Step 2
+Go to Settings
+
+Step 3
+Enable:
+
+Push Notifications
+Strategy Alerts
+
+---
+
+# PART 8: What happens next (very important)
+
+When hedge signal comes, Streak sends alert like:
+
+"NIFTY Active Hedge Alert – Entry Condition Met"
+
+Now immediately:
+
+Open Zerodha Kite
+Go to Option Chain
+Buy ATM PUT option
+
+Example:
+
+If NIFTY = 22000
+Buy 22000 PE
+
+Qty: 1 lot
+
+---
+
+# PART 9: Exit process
+
+When exit alert comes:
+
+"NIFTY Active Hedge Alert – Exit Condition Met"
+
+Sell PUT option
+
+Book profit/loss
+
+---
+
+# PART 10: Recommended additional crash strategy (optional but powerful)
+
+Repeat same steps but use:
+
+Timeframe: 5 min
+
+Conditions:
+
+Close < VWAP
+RSI < 40
+
+This catches fast crashes.
+
+---
+
+# PART 11: Final recommended setup (Professional level)
+
+Create 3 strategies:
+
+Strategy 1
+NIFTY Hedge 15 min
+
+Strategy 2
+NIFTY Crash Hedge 5 min
+
+Strategy 3
+NIFTY Daily Hedge Confirmation
+
+---
+
+# PART 12: Your daily workflow (simple)
+
+Morning 9:15–9:30
+Check alerts
+
+If alert comes → Buy PUT
+
+If exit alert comes → Sell PUT
+
+Total time needed: 5 minutes/day
+---
+****
 ---
 
 # PART 1: Strategy Objective
