@@ -1,5 +1,3 @@
----
-
 # 1️⃣ Important Market Principle
 
 When support is tested multiple times:
