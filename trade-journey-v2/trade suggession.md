@@ -1,3 +1,29 @@
+## Bear Put Spread (Debit)
+
+Example structure:
+
+Buy 25,450 PE
+Sell 25,350 PE
+
+## Scenario A — You Anticipate Bounce Before Breakdown
+
+If you want to trade the bounce:
+
+You should NOT:
+
+• Hold 25,600 CE (too far OTM, low probability in 4 DTE)
+
+Instead consider:
+
+### Conservative Bounce Play
+
+Buy 25,450 CE
+Sell 25,550 CE
+
+Short-term Bull Call Spread.
+
+###
+
 # Step 1 — Current Position Reality
 
 Long 25,600 CE
