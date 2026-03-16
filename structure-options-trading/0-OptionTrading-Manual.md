@@ -679,5 +679,67 @@ systematic review
 The goal is **consistent execution over time**.
 
 ---
+##
+# Day Type Integration
+
+Day Type is used only as a contextual filter.
+
+It does not replace the PSA trading model.
+
+The PSA model still relies on:
+
+- Liquidity sweeps
+- VWAP positioning
+- OI levels
+- Expected move
+- Spread planning
+
+Day Type only influences trade management.
+
+## Identification Window
+
+Day type is observed between:
+
+09:15 – 10:15
+
+It should not be predicted before the market opens.
+
+## Possible Day Types
+
+Trend  
+Range  
+Reversal  
+Neutral
+
+## Influence on Trading
+
+Entry rules remain unchanged.
+
+Example PSA entry:
+
+Liquidity sweep + VWAP reclaim.
+
+However Day Type changes how the trade is managed.
+
+Trend Day:
+Hold naked option longer before converting to spread.
+
+Range Day:
+Convert spread earlier and reduce target expectations.
+
+Reversal Day:
+Allow sweep setups to trigger directional trades.
+
+Neutral Day:
+Reduce trade frequency.
+
+## Key Rule
+
+Day Type must never override PSA structure.
+
+If PSA conditions are not present:
+
+No Trade
+##
 
 If you'd like, I can also create a **clean printable 1-page “Daily Trading Checklist”** from this manual (something traders keep beside their screen while trading).
