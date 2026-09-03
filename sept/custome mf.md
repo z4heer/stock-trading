@@ -1,280 +1,63 @@
-# Custom MF — Sensex 30 Tranche Rotation Income Fund — V1.0
-### Master Requirements + Design + Implementation Handoff
+Good — let's walk through one complete cycle end to end with made-up numbers, so you can see exactly how it behaves. All prices/dates below are illustrative, not real signals.
+
+**Starting state:** ₹1,00,000 corpus, T1–T5 all IDLE, ₹20,000 each.
 
 ---
 
-## 1. Project Objective
+**Day 1 (Mon), 3:30 PM — EOD scan**
+Scanner checks all 30 Sensex stocks. Only **Stock A** passes all 5 entry conditions (trend, dip, recovery, 20 DMA reclaim, VWAP reclaim). 5 tranches are idle, only 1 candidate → no ranking needed. Signal frozen: `BUY Stock A`. Written to `ACTION_QUEUE` for tomorrow.
 
-Build a personal, semi-automatic **"custom mutual fund"** using:
+**Day 2 (Tue), 09:45–11:00 AM — Execution window**
+You open Zerodha, place the manual buy. Stock A is at ₹1,000 → 20 shares for ₹20,000.
+→ **T1 becomes DEPLOYED**: Stock A, avg price ₹1,000, target ₹1,065 (+6.5%), quarantine trip-wire ₹800 (-20%).
+→ **T2, T3, T4, T5 still IDLE** — nothing else qualified that day.
 
-- Google Sheets as the UI/control panel
-- Google Apps Script as the backend/strategy engine
-- Yahoo Finance as the market-data source
-- Manual Zerodha execution
-- Human-in-the-Loop (HITL)
-- Sensex 30 as the stock universe
-- Fixed corpus of ₹1,00,000, split into 5 rotating tranches of ₹20,000
+**Day 2, 3:30 PM — EOD scan (same evening)**
+Now **Stock B** and **Stock C** both qualify. 4 tranches idle, 2 candidates → both get signals, no ranking contest needed. `BUY Stock B`, `BUY Stock C` frozen for tomorrow.
 
-This is a standalone project, fully independent of the separate SENSEX 60 satellite system. There is no capital overlap and no shared architecture between the two.
+**Day 3 (Wed), execution window**
+Both buys executed. Stock B at ₹500 → 40 shares. Stock C at ₹2,000 → 10 shares.
+→ **T2 DEPLOYED**: Stock B, avg ₹500, target ₹532.50
+→ **T3 DEPLOYED**: Stock C, avg ₹2,000, target ₹2,130
+→ **T4, T5 still IDLE**
 
-**Objective in one line:**
-> A fixed-capital, rule-based fund that rotates through Sensex 30 opportunities, books profit at a fixed target, and pays that profit out as income — while principal is preserved and redeployed, cycle after cycle.
-
----
-
-## 2. Core Philosophy
-
-- A retail investor does not move the market — the system follows Sensex 30, it does not predict it.
-- No traditional stop-loss. Downside is handled by quarantine, not forced selling.
-- Capital is fixed forever. The fund is judged on **income generated**, not on corpus growth.
-- The investor can give the system ~1 hour a day (review + manual execution) — this is what makes an active, rotating tranche model viable, unlike a pure buy-and-hold index approach.
-- Simple, deterministic rules. No discretion, no ML, no prediction.
+*(If on some later day 6 stocks qualified at once but only 2 tranches were idle, the ranking engine would score all 6 and the top 2 would fill the tranches — the rest stay as valid-but-unfilled signals, visible in `SIGNALS` but not actionable that day.)*
 
 ---
 
-## 3. Frozen V1 Decisions
+**Days 4–18 — holding period**
+T1, T2, T3 are tracked daily against their target and quarantine lines. Nothing forces an exit; the system just watches. Say Stock B has a rough patch and drifts down — not our happy path, but worth knowing: if it closed at ₹400 (-20%), T2 would move to `QUARANTINE`, get excluded from the idle count, and simply sit there until Phase 2 quarantine logic is built. For this walkthrough, assume it doesn't happen.
 
-| Area | Decision |
-|---|---|
-| Universe | Sensex 30 |
-| Total capital | ₹1,00,000 (fixed, no top-ups, never grows/shrinks from trading) |
-| Tranche count | 5 |
-| Tranche size | ₹20,000 each |
-| Tranche allocation model | Shared pool — tranches rotate across whichever Sensex 30 stock qualifies. **Not** earmarked per stock. |
-| Max concurrent positions | 5 (hard cap, since total capital = 5 × tranche size) |
-| Entry signal | Trend + Dip + Recovery + 20 DMA Reclaim + VWAP Reclaim (identical logic to the proven SENSEX 60 engine) |
-| Exit signal | **+6.5% gain on position average price** → full exit (new for this system) |
-| Stop-loss | None. Downside handled via Quarantine Cell, not forced selling |
-| Quarantine trigger | Position down ≥20% from average price (exact treatment logic — Phase 2) |
-| Income | 100% of every booked profit is income/payout |
-| Principal | Returns to idle pool unchanged after every exit |
-| Signal cadence | Daily, EOD (3:30 PM) |
-| Execution window | Next day, 09:45–11:00 AM, manual Zerodha |
-| Review cadence | Monthly — reporting only, never a trigger |
-| Data source | Yahoo Finance |
-| Broker automation | None — manual execution only |
+**Day 19 (EOD scan)**
+Stock A closes at ₹1,067 — above its ₹1,065 target. `TARGET_HIT` signal generated for T1: `EXIT Stock A`.
+
+**Day 20, execution window**
+You sell all 20 shares of Stock A at ~₹1,067.
+→ Profit realized: 20 × (1067 − 1000) = **₹1,340**, logged in `INCOME_LOG` as income.
+→ **T1 returns to IDLE**, ₹20,000 principal exactly restored, ready to redeploy.
+→ Your bank/income pool is now richer by ₹1,340; the fund's corpus is still exactly ₹1,00,000.
+
+**Day 20, 3:30 PM — same evening's EOD scan**
+**Stock D** now qualifies. T1 is the only idle tranche → `BUY Stock D` frozen.
+
+**Day 21, execution window**
+Stock D bought at ₹300 → 66 shares for ₹19,800 (₹200 stays uninvested in that tranche, or you round to nearest lot — small residual cash is normal and just sits with that tranche until next redeploy).
+→ **T1 DEPLOYED again**, now in Stock D.
 
 ---
 
-## 4. Capital / Tranche Model
+**Where things stand after this one cycle:**
 
-```
-Total corpus:        ₹1,00,000
-Tranche size:         ₹1,00,000 ÷ 5 = ₹20,000
-Max active tranches:  5 (i.e. max 5 concurrent positions)
-```
+| Tranche | Day 1 | Day 3 | Day 20 | Day 21 |
+|---|---|---|---|---|
+| T1 | IDLE | Stock A | IDLE (exited, +₹1,340 income) | Stock D |
+| T2 | IDLE | Stock B | Stock B | Stock B |
+| T3 | IDLE | Stock C | Stock C | Stock C |
+| T4 | IDLE | IDLE | IDLE | IDLE |
+| T5 | IDLE | IDLE | IDLE | IDLE |
 
-Tranches are **not** bound to a specific stock. A tranche is a rotating capital slot:
+Cumulative income so far: **₹1,340**, corpus still **₹1,00,000**, 2 tranches still waiting for their first signal.
 
-```
-IDLE (₹20,000 free)
-   ↓ qualifying signal found
-DEPLOYED (holding one Sensex 30 stock)
-   ↓ price falls ≥20% from avg price
-QUARANTINE (parked, excluded from rotation — Phase 2 defines exit)
-   ↓ [normal path] price gains 6.5% from avg price
-TARGET HIT → book profit → pay income → tranche returns to IDLE
-```
+This is the whole engine, repeating indefinitely: idle capital waits → a stock proves itself (dip + recovery + reclaim) → capital deploys → it either reaches +6.5% and pays out, or it drops 20% and parks in quarantine → freed capital hunts again. Nothing about this requires daily attention — your ~1 hour a day is really just the 09:45–11:00 execution check and a glance at the dashboard.
 
-At any time, up to 5 different Sensex 30 stocks may be held — one tranche each. The system does not care *which* stock a tranche is in; it only cares that the tranche completes its cycle (target hit) and rotates.
-
----
-
-## 5. Entry Rules (Signal Engine)
-
-Reused unchanged from the proven trend/dip/recovery/reclaim design:
-
-1. Valid Sensex 30 stock
-2. **Trend PASS**: 20 DMA flat-to-rising (vs prior day) AND EOD close above 50 DMA
-3. **Qualifying dip**: ≥5% decline from the system-tracked reference high
-4. **Recovery confirmed**: price moving up, no fresh lower low
-5. **20 DMA reclaim**: EOD close > 20 DMA
-6. **VWAP reclaim**: EOD close > previous completed session's VWAP
-7. **Idle tranche available**: at least one of the 5 tranches is free
-
-All conditions PASS → valid BUY candidate. Missing/insufficient data → `DATA_INSUFFICIENT`, never a guess.
-
----
-
-## 6. Ranking Rule
-
-Applied only when qualifying candidates exceed available idle tranches on a given day.
-
-```
-Rank Score = Trend Strength + Recovery Strength + Reclaim Strength
-```
-
-- No artificial tie-breaker. Equal-rank candidates remain equally eligible.
-- At the manual execution stage, the human decides among tied candidates.
-- Highest-ranked candidates fill idle tranches first.
-
----
-
-## 7. Exit Rule (New for This System)
-
-- Target: **+6.5% gain on the position's average price** (whole position, not per-tranche sub-splits — each tranche only ever holds one full position, so this is moot in practice, but stated for clarity).
-- On EOD close ≥ average price × 1.065 → exit signal generated for next-day execution.
-- Full exit only. No partial profit booking.
-- On confirmed execution: profit realized = income (100% payout), principal (₹20,000) returns to idle pool.
-
----
-
-## 8. Quarantine Protocol (Downside Safety, No Stop-Loss)
-
-- If EOD close ≤ average price × 0.80 (i.e. -20% from entry), the position moves to a **Quarantine Cell**.
-- Quarantined capital is **excluded from the idle rotation pool** — it does not count toward the 5 available tranches, and no new signal can claim it.
-- Quarantine is not an automatic sale. No forced exit occurs at the threshold.
-- **Detailed quarantine treatment and exit/recovery logic is deferred to Phase 2** — this includes questions like: does it get a lower re-entry bar for reclaim, a longer holding runway, a deeper loss threshold for eventual manual exit, etc. V1 only defines the trigger and the parked state.
-
----
-
-## 9. Daily Workflow (3:30 PM)
-
-1. Load Sensex 30 snapshot
-2. Validate market data
-3. Calculate 20 DMA, 50 DMA, previous-session VWAP
-4. Update reference high, dip, recovery state per stock
-5. Evaluate trend + reclaim conditions
-6. For each **held** position: check +6.5% target and -20% quarantine trigger
-7. Build valid BUY candidates from unheld, qualifying stocks
-8. Count idle tranches (5 − deployed − quarantined)
-9. Rank candidates if candidates > idle tranches
-10. Freeze signals (BUY / EXIT / QUARANTINE) for next-day action
-11. Write Signal History
-12. Write Audit
-
-## 10. Next-Day Execution (09:45–11:00 AM)
-
-1. Load frozen signals
-2. Predefined validity checks only (no strategy recalculation)
-3. Human review, manual Zerodha execution
-4. Enter actual quantity/price for BUY, or confirm EXIT fill
-5. On EXIT: log realized profit as income, return ₹20,000 principal to idle pool
-6. On QUARANTINE trigger: mark position quarantined, remove from active rotation count
-7. Update Positions, Trade Log, Audit
-
----
-
-## 11. Google Sheet Architecture
-
-11 tabs (same proven structure as the SENSEX 60 system, adapted):
-
-1. `DASHBOARD` — corpus, idle/deployed/quarantined tranches, income paid (lifetime + this month), system status
-2. `SETTINGS` — all configurable values below
-3. `WATCHLIST` — Sensex 30 symbols, Active flag
-4. `MARKET_DATA` — OHLCV history
-5. `INDICATORS` — DMA20, DMA50, VWAP, trend/dip/recovery/reclaim status per stock
-6. `TRANCHES` — one row per tranche (T1–T5): status (IDLE/DEPLOYED/QUARANTINED), current symbol, avg price, entry date, capital
-7. `SIGNALS` — daily generated BUY/EXIT/QUARANTINE signals, rank, reason, frozen flag
-8. `ACTION_QUEUE` — next-day actions awaiting human execution
-9. `TRADE_LOG` — actual executed trades (entries and exits)
-10. `INCOME_LOG` — every booked profit event: date, symbol, tranche, profit amount, cumulative income
-11. `SYSTEM_AUDIT` — action log
-
-**Difference from the SENSEX 60 sheet**: `POSITIONS` is replaced by `TRANCHES` (tranche-centric, not stock-centric — since tranches rotate across stocks) and a new `INCOME_LOG` tab tracks the fund's actual purpose: income paid out.
-
----
-
-## 12. SETTINGS Values
-
-```
-SYSTEM_VERSION        = 1.0
-UNIVERSE               = SENSEX_30
-TOTAL_CORPUS           = 100000
-TRANCHE_COUNT          = 5
-TRANCHE_SIZE           = 20000
-
-DMA_PERIOD             = 20
-DMA50_PERIOD           = 50
-VWAP_METHOD            = PREVIOUS_SESSION
-DIP_THRESHOLD_PERCENT  = 5
-
-PROFIT_TARGET_PERCENT  = 6.5
-QUARANTINE_THRESHOLD_PERCENT = 20
-
-SIGNAL_TIME             = 15:30
-EXECUTION_START         = 09:45
-EXECUTION_END           = 11:00
-
-PRIMARY_DATA_SOURCE     = YAHOO
-DATA_VALIDATION         = ENABLED
-```
-
----
-
-## 13. Apps Script File Structure
-
-```
-Config.gs
-Setup.gs
-Dashboard.gs
-MarketData.gs
-Indicators.gs
-StateEngine.gs
-SignalEngine.gs
-RankingEngine.gs
-TrancheManager.gs      (replaces PositionManager.gs — tranche-centric)
-ExecutionManager.gs
-TradeLog.gs
-IncomeLog.gs           (new — tracks every profit-booking / income event)
-SignalHistory.gs
-AuditLogger.gs
-Validation.gs
-Utils.gs
-```
-
----
-
-## 14. Safety / Deterministic Rules
-
-| Condition | Output |
-|---|---|
-| Missing/insufficient data | `DATA_INSUFFICIENT`, never BUY |
-| Trend fails | `NO_ACTION` |
-| No qualifying dip | No BUY |
-| No recovery | `WAIT_RECOVERY` |
-| One reclaim only | `WAIT_RECLAIM` |
-| No idle tranche available | Signal recorded, but not actionable — `NO_TRANCHE_AVAILABLE` |
-| Position ≥ +6.5% | `TARGET_HIT` → EXIT signal |
-| Position ≤ -20% | `QUARANTINE` — parked, not sold |
-| Duplicate signal generation | Must not create duplicate signals for same Date + Symbol + Cycle |
-| Duplicate trade completion | Second completion attempt rejected |
-| Signal generation | Must never modify tranche/position state |
-| Broker mismatch | Flagged, never silently overwritten |
-
----
-
-## 15. Testing Requirements
-
-- Positive entry: all conditions PASS → BUY, tranche moves IDLE → DEPLOYED
-- Target hit: position at avg price × 1.065 → EXIT signal, income logged, tranche returns to IDLE
-- Quarantine trigger: position at avg price × 0.80 → QUARANTINE, excluded from idle count
-- No idle tranche: valid signal exists but 0 idle tranches → recorded, not actionable
-- Ranking: more candidates than idle tranches → ranked, highest fills first, ties preserved
-- Duplicate signal/execution: rejected on second attempt
-- Data failure: `DATA_INSUFFICIENT`, no BUY
-
----
-
-## 16. Implementation Phases
-
-- **Phase 1** — Google Sheet Foundation: 11 tabs, SETTINGS, WATCHLIST (Sensex 30), Dashboard, custom menu, validation. No live signals.
-- **Phase 2** — Market Data: Yahoo Finance integration, Sensex 30 OHLCV, failure handling. **Also formalizes Quarantine Cell treatment/exit logic**, per Section 8.
-- **Phase 3** — Indicator Engine: 20/50 DMA, previous-session VWAP, trend/reclaim status.
-- **Phase 4** — State Engine: reference high, dip, recovery, quarantine state tracking.
-- **Phase 5** — Signal Engine: entry (trend+dip+recovery+reclaim) and exit (+6.5% target) logic combined.
-- **Phase 6** — Ranking Engine: rank score, no tie-breaker, idle-tranche-aware candidate limiting.
-- **Phase 7** — Signal Freeze / Action Queue.
-- **Phase 8** — Manual Execution: entries, exits, income logging, tranche state updates.
-- **Phase 9** — Reconciliation: broker vs sheet.
-- **Phase 10** — One-month review: income paid, cycles completed, avg days-to-target, quarantine status, capital utilization.
-
----
-
-## 17. Current Status
-
-Strategy design is frozen for V1. Immediate next step: **Phase 1 — Google Sheet Foundation** (new, standalone Sheet + Apps Script project — does not reuse the SENSEX 60 project).
-
----
-
-END OF SPEC
+Does this match the shape you had in mind, or is there a scenario in this flow (multiple tranches free on the same day, a quarantine event, etc.) you want to see played out differently before we build it?
