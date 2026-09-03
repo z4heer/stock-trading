@@ -1,35 +1,501 @@
-Ok, now I follow — you don't want 1 tranche = 1 stock. You want **1 tranche (₹20,000) split into 5 smaller slots (₹4,000 each)**, so a single ₹20,000 "transaction" itself averages across up to 5 stocks instead of betting the whole ₹20,000 on one name. And that averaging can keep extending — a second tranche's ₹20,000 adds 5 more slots, taking the total basket to 10 stocks — with one consolidated +6.5% exit for the whole basket.
+# Re-Buy / Averaging Logic — Beginner Friendly Hinglish
 
-That's a sound design, but it needs one explicit rule I don't want to leave ambiguous: **what happens if fewer than 5 stocks qualify on the day a tranche opens?** Two ways to handle it:
+Samajh gaya — iska matlab ye hai ki **har signal ka matlab new stock hona zaroori nahi hai**.
 
-- **(a) Fill gradually** — the tranche opens with however many slots qualify that day (say 3 of 5, ₹12,000 deployed, ₹8,000 still idle within that tranche), and the remaining slots fill on later days as new stocks qualify — up to 5 slots per tranche.
-- **(b) Fill same-day only** — if fewer than 5 qualify on day 1, deploy only into those and don't backfill later; that tranche runs with fewer stocks.
+Agar koi stock jo aapke portfolio/basket mein already hai, dobara same entry conditions fulfill karta hai:
 
-(a) matches "daily keep following signal to add position" from your message, so I'll assume that's what you want. Here's one full cycle on that basis:
+**Fresh Dip → Recovery → Reclaim**
 
----
+toh hum usi stock mein **ek aur ₹4,000 ka slot** add kar sakte hain.
 
-**Setup:** ₹1,00,000 corpus, **5 tranches of ₹20,000**, each tranche = **5 slots of ₹4,000**. All tranches idle.
+Iske liye ek **fresh tranche/slot** use hoga.
 
-**Day 1, EOD:** Stocks A, B, C qualify (only 3 today). → **Tranche 1 opens**: slot1→A, slot2→B, slot3→C, ₹12,000 deployed, 2 slots (₹8,000) still open within T1.
-
-**Day 2, EOD:** Stock D qualifies. → T1 slot4→D. ₹16,000 deployed, 1 slot left.
-
-**Day 3, EOD:** Stock E qualifies. → T1 slot5→E. **T1 is now full: 5 stocks, ₹20,000 fully deployed.** T2–T5 still fully idle (₹80,000 untouched).
-
-**Day 4, EOD:** Stock F qualifies. Since T1 is full, this opens **Tranche 2**: slot1→F, ₹4,000 deployed. T2 has 4 slots left.
-
-*(This keeps going — say by Day 10, T2 also fills up with 5 more stocks: F, G, H, I, J. Now the basket has grown to 10 distinct stocks total across T1+T2, ₹40,000 deployed, T3/T4/T5 = ₹60,000 still in reserve, untouched.)*
-
-**Days 10–25 — monitoring the 10-stock basket (T1+T2 combined):**
-Every day, track the blended value of all 10 positions against their combined cost (₹40,000). Also watch each stock individually for the -20% quarantine line — say Stock C drops 20%; it's parked in quarantine and dropped from both the slot count and the blended calculation, so it can't block the group's exit.
-
-**Day 26, EOD:** Blended value of the 9 active stocks (C is quarantined) reaches ₹38,300 profit is +6.5% on the ~₹36,000 still active → `CONSOLIDATED_TARGET_HIT` for the T1+T2 basket.
-
-**Day 27, execution window:** Exit all 9 active positions. Profit booked, logged as income. **T1 and T2 fully reset to idle** — all 10 slots empty again, ₹40,000 back in the pool, ready to build a fresh basket from scratch. Stock C stays quarantined in its own slot until Phase 2 resolves it.
+Isko averaging bol sakte hain, kyunki stock dobara lower price par mil raha hai toh total holding ka **average buy price improve** ho sakta hai.
 
 ---
 
-This gives you real averaging (up to 5 stocks per ₹20,000, up to 25 stocks total if all 5 tranches fill this way), gradual entry that follows signals instead of forcing five buys on day one, and a group exit — while still ring-fencing weak stocks in quarantine so they can't hold the whole basket hostage.
+# Important: 10-Stock Limit Ka Meaning
 
-Does the **(a) gradual fill** assumption match what you meant, and does capping a basket at "1 tranche = 5 stocks, up to 2 tranches = 10 stocks" feel right — or should a basket be allowed to grow past 10 if more tranches keep opening?
+Yahan ek important distinction hai:
+
+**10-stock limit = maximum 10 DISTINCT stocks**
+
+Ye total number of buys ki limit nahi hai.
+
+Example:
+
+* Stock A → Buy 1
+* Stock A → Buy 2
+* Stock A → Buy 3
+
+Ye 3 buys hain, lekin **sirf 1 distinct stock** hai.
+
+Similarly:
+
+* A
+* B
+* C
+* D
+* E
+* F
+* G
+* H
+* I
+* J
+
+= **10 distinct stocks**
+
+Lekin A aur C mein multiple re-buys ho sakte hain.
+
+---
+
+# Ek Daily Priority Rule Lock Karna Zaroori Hai
+
+Ek situation important hai.
+
+Maan lo same day:
+
+* Ek **brand-new stock** qualify karta hai
+* Ek **already-held stock** bhi dobara qualify karta hai
+* Lekin available capital sirf **₹4,000 ke ek slot** ke liye hai
+
+Toh paisa kisko milega?
+
+### Option 1
+
+New stock mein invest karo → diversification badhegi.
+
+### Option 2
+
+Existing stock mein dobara invest karo → averaging hogi.
+
+Is example mein rule ye assume kiya gaya hai:
+
+> **Pehle diversification. Jab tak 10 distinct stocks complete nahi hote, new stocks ko priority milegi. 10 stocks complete hone ke baad hi averaging/re-buy allowed hoga.**
+
+Simple words mein:
+
+**Pehle 10 different stocks banao → uske baad existing stocks mein averaging karo.**
+
+Isse starting phase mein portfolio zyada spread rahega.
+
+---
+
+# Ab Complete Cycle Samajhte Hain
+
+## Day 1–3 — First 5 Stocks
+
+Starting mein basket building start hoti hai.
+
+5 stocks qualify karte hain:
+
+* A
+* B
+* C
+* D
+* E
+
+Inmein 5 slots deploy hote hain.
+
+Har stock mein:
+
+**₹4,000**
+
+Total:
+
+**5 × ₹4,000 = ₹20,000**
+
+Ab basket mein:
+
+**5 distinct stocks**
+
+hain.
+
+---
+
+# Day 4–10 — Next 5 Stocks
+
+Ab next days mein 5 aur **new stocks** qualify karte hain:
+
+* F
+* G
+* H
+* I
+* J
+
+Ye bhi ₹4,000 each ke slots se buy hote hain.
+
+Additional investment:
+
+**5 × ₹4,000 = ₹20,000**
+
+Ab total:
+
+**₹20,000 + ₹20,000 = ₹40,000 deployed**
+
+Aur basket mein:
+
+**10 distinct stocks**
+
+hain:
+
+**A, B, C, D, E, F, G, H, I, J**
+
+### 10-Stock Cap Reached
+
+Ab 10-stock limit complete ho gayi.
+
+Is point ke baad:
+
+❌ New 11th stock allowed nahi
+
+✅ Existing A–J stocks mein re-buy/averaging allowed
+
+---
+
+# Day 15 — Stock A Dobara Qualify Karta Hai
+
+Maan lo Stock A mein pehle buy ke baad:
+
+**Dip → Recovery → Reclaim**
+
+phir se hua.
+
+Matlab Stock A dobara entry conditions fulfill karta hai.
+
+Lekin Stock A already basket mein hai.
+
+Aur 10-stock limit already complete hai.
+
+Toh ye **new stock entry nahi** hai.
+
+Ye:
+
+**RE-BUY / AVERAGING**
+
+hai.
+
+Ab ek fresh ₹4,000 slot use karke Stock A mein aur buy karte hain.
+
+---
+
+# Stock A ka Example
+
+### First Buy
+
+Stock A price:
+
+**₹1,000**
+
+Investment:
+
+**₹4,000**
+
+Shares:
+
+**₹4,000 ÷ ₹1,000 = 4 shares**
+
+So:
+
+**4 shares @ ₹1,000**
+
+---
+
+### Second Buy
+
+Day 15 par Stock A ka price:
+
+**₹900**
+
+Again investment:
+
+**₹4,000**
+
+Shares:
+
+**₹4,000 ÷ ₹900 ≈ 4.44 shares**
+
+Ab total:
+
+**Investment = ₹8,000**
+
+Total shares:
+
+**4 + 4.44 = 8.44 shares**
+
+Blended average price:
+
+**₹8,000 ÷ 8.44 ≈ ₹948**
+
+So Stock A ka average buy price approximately:
+
+### **₹948**
+
+ho gaya.
+
+Pehle average price ₹1,000 tha.
+
+Ab second lower-price buy ke baad average:
+
+**₹948**
+
+ho gaya.
+
+Yani lower price par re-buy karne se **cost basis improve** hua.
+
+---
+
+# Day 20 — Stock C Dobara Qualify
+
+Ab Stock C bhi same pattern follow karta hai:
+
+**Dip → Recovery → Reclaim**
+
+Stock C already basket mein hai.
+
+Isliye ek aur ₹4,000 ka slot:
+
+**T3 Slot 2 → Stock C**
+
+mein deploy hota hai.
+
+Stock C ka blended average price bhi accordingly update ho jayega.
+
+---
+
+# Day 20–25 — No More Re-Buys
+
+Ab maan lo Day 20–25 ke beech koi aur stock re-qualify nahi karta.
+
+Toh T3 mein:
+
+* Slot 1 → Stock A
+* Slot 2 → Stock C
+* Slot 3 → IDLE
+* Slot 4 → IDLE
+* Slot 5 → IDLE
+
+T3 ke total:
+
+**2 × ₹4,000 = ₹8,000 deployed**
+
+Aur:
+
+**3 × ₹4,000 = ₹12,000 available**
+
+T4 aur T5 bhi completely idle hain.
+
+Total reserve:
+
+**₹60,000**
+
+Total deployed:
+
+**₹48,000**
+
+Ye ₹48,000 10 distinct stocks mein distributed hai, lekin A aur C ke paas **2-2 buys** hain.
+
+---
+
+# Day 26 — Consolidated Target Hit
+
+Ab maan lo Stock H bahut gir gaya aur:
+
+**-20%**
+
+par pahunch gaya.
+
+H:
+
+**QUARANTINE**
+
+mein chala jayega.
+
+Isliye H ko active basket calculation se remove kar diya jayega.
+
+Baaki **9 active stocks** ka combined performance calculate hoga.
+
+Maan lo active 9 stocks ka combined value unke combined cost ke comparison mein:
+
+**+6.5%**
+
+reach kar gaya.
+
+System signal generate karega:
+
+**`CONSOLIDATED_TARGET_HIT`**
+
+---
+
+# Day 27 — Exit
+
+Execution window mein aap **saare active positions exit** karte ho.
+
+Ismein:
+
+* Stock A ki first buy
+* Stock A ki second buy
+* Stock C ki first buy
+* Stock C ki second buy
+* Baaki active stocks
+
+sabki full holdings sell hongi.
+
+Yani averaging ke through jo extra shares liye the, woh bhi same time exit honge.
+
+Poore active basket ka profit calculate hoga.
+
+Example:
+
+**Total Profit = Basket Exit Value − Basket Cost**
+
+Ye realized profit:
+
+**INCOME_LOG**
+
+mein income ke roop mein record hoga.
+
+---
+
+# Exit Ke Baad Tranches/Slots
+
+Active positions exit hone ke baad:
+
+* T1 → IDLE
+* T2 → IDLE
+* T3 ke used slots → IDLE
+* Baaki used slots → IDLE
+
+Matlab jo capital use hua tha, woh dobara available ho gaya.
+
+### Distinct Stock Count
+
+Basket ka active distinct-stock count:
+
+**10 → 0**
+
+reset ho jayega.
+
+Kyunki old basket close ho chuka hai.
+
+Ab fresh basket building next EOD scan se start hogi.
+
+---
+
+# Quarantine Stock H ka Kya Hoga?
+
+Stock H:
+
+**QUARANTINE**
+
+mein hi rahega.
+
+Uska capital abhi normal basket ka part nahi maana jayega.
+
+Phase 2 mein decide hoga:
+
+* H ko kab review karna hai
+* Kab exit karna hai
+* Capital kaise recover/redeploy karna hai
+* Quarantine se kab release karna hai
+
+Important point:
+
+> H ki wajah se baaki active stocks ka exit block nahi hua.
+
+---
+
+# Is Model ka Main Benefit
+
+Is approach mein ek interesting behavior aata hai:
+
+### Strong/Conviction Stock Dip Karta Hai
+
+↓
+
+Phir recover karta hai
+
+↓
+
+Entry conditions dobara satisfy karta hai
+
+↓
+
+Same stock mein **₹4,000 ka additional buy**
+
+↓
+
+Average cost improve ho sakta hai
+
+↓
+
+Basket target hit hone par **poori holding exit**
+
+Isse ek stock ke andar multiple entries possible hain.
+
+---
+
+# 10-Stock Cap Kyu Useful Hai?
+
+10-stock cap ka purpose hai ki portfolio unlimited stocks mein spread na ho jaye.
+
+Without cap:
+
+**10 → 15 → 20 → 30 → 50 stocks...**
+
+Portfolio bahut difficult to manage ho sakta hai.
+
+With cap:
+
+**Maximum 10 distinct stocks**
+
+Uske baad:
+
+**New stocks ❌**
+
+**Existing stocks mein averaging ✅**
+
+Isse portfolio controlled aur manageable rehta hai.
+
+---
+
+# Final Priority Rule
+
+System ka simple decision rule:
+
+### Stage 1 — 10 Stocks Complete Nahi Hue
+
+Agar available ₹4,000 slot hai aur:
+
+* New stock qualify karta hai
+* Existing stock bhi re-qualify karta hai
+
+Toh:
+
+### **NEW STOCK ko priority**
+
+Goal:
+
+**Diversification first**
+
+---
+
+### Stage 2 — 10 Stocks Complete Ho Gaye
+
+Ab new stock allowed nahi.
+
+Agar existing stock dobara qualify karta hai:
+
+### **RE-BUY / AVERAGING allowed**
+
+Goal:
+
+**Existing positions mein conviction build karna**
+
+---
+
+# One-Line Logic
+
+> **Pehle 10 different stocks build karo → 10-stock cap reach hone ke baad new stocks band → existing stocks ke fresh dip + recovery + reclaim par ₹4,000 ke additional buys → average cost improve → active basket +6.5% target hit kare → complete active holdings exit → profit income mein log → fresh basket start.**
+
+Ye model basically **diversification first, averaging later** approach follow karta hai.
