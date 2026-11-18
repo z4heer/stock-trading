@@ -1,3 +1,84 @@
+Bilkul sahi plan hai! Coding logic build aur verify ho chuka hai, ab aaj ke bache hue setup aur repository tasks clean tarike se wrap up kar lete hain taaki next session mein aap seedha feature upgrades aur Shoonya live feed par kaam kar sakein.
+
+---
+
+### 1. OpenAlgo Local Dashboard Ready Karna (Bina Broker API Ke Bhi)
+
+Aap OpenAlgo ko abhi clone karke uska local admin dashboard aur SQLite database ready kar sakte hain—taaki Shoonya credentials aate hi sirf `.env` update karna pade:
+
+```bash
+cd ~/trading-projects
+git clone https://github.com/marketcalls/openalgo.git
+cd openalgo
+
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+
+cp .env.example .env
+
+```
+
+`.env` mein abhi ke liye sirf server settings aur placeholder broker (`shoonya`) set karke server start check kar lein:
+
+```env
+BROKER="shoonya"
+BROKER_API_KEY="PENDING_SHOONYA_KEY"
+BROKER_API_SECRET="PENDING_SHOONYA_SECRET"
+REDIRECT_URL="http://127.0.0.1:5000/shoonya/callback"
+HOST_SERVER="127.0.0.1"
+PORT="5000"
+
+```
+
+Ab `python app.py` run karein, browser mein `[http://127.0.0.1:5000](http://127.0.0.1:5000)` kholein, apna **Local Admin Username & Password** register karein, aur **API Keys** tab se apni **OpenAlgo Local API Key** copy karke `config.py` mein save kar lein.
+
+---
+
+### 2. Custom Strategy Code Ko GitHub Par Push Karna
+
+Apne `option-trailing-algo` folder mein `.gitignore` add karein taaki `venv/`, `.env`, aur `paper_trades_log.csv` accidental push na hon:
+
+```bash
+cd ~/trading-projects/option-trailing-algo
+
+cat <<EOF > .gitignore
+venv/
+__pycache__/
+*.pyc
+.env
+*.csv
+EOF
+
+git init
+git add config.py broker_adapter.py strategy_engine.py .gitignore
+git commit -m "feat: initial option trailing SL paper trading engine with simulation mode"
+
+```
+
+Iske baad GitHub par ek private repo (e.g., `option-trailing-algo`) banakar remote add karein aur push kar dein:
+
+```bash
+git branch -M main
+git remote add origin https://github.com/<your-username>/option-trailing-algo.git
+git push -u origin main
+
+```
+
+---
+
+### 3. Next Session Ke Liye Readiness Checklist
+
+* **Broker Account:** Shoonya (Finvasia) account opening + TOTP 2FA enable + API portal se `API Key` / `Vendor Code` generate karna.
+* **Next Coding Session Agenda:**
+1. OpenAlgo `.env` mein Shoonya credentials daal kar **Analyze Mode (Paper Trade)** mein live tick connection verify karna.
+2. `strategy_engine.py` mein **3-min candle close / VWAP pullback entry filter** aur **max 2–3 trades/day kill-switch** add karna.
+
+
+
+Aap OpenAlgo dashboard aur Git push complete kar lijiye—jab next session mein connect karenge toh wahin se aage badhenge!
+---
 ### 1. Shoonya vs Dhan vs Fyers (Free API Comparison)
 
 | Broker | Trading API | Live Market Data & WebSocket | OpenAlgo Support | Best For |
