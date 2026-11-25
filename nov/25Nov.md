@@ -1,3 +1,23 @@
+**Yes—this specific 10-symbol chunking + 6s timeout fix in `equity_screener.py` is genuinely required**, even though our earlier fixes in `d0a6256` resolved all the other bugs. Here is why:
+
+1. **What `d0a6256` fixed vs. what just happened in your test:**
+* `d0a6256` fixed `BrokerAdapter.get_multiquotes()` and `get_quote()` caching/schema parsing.
+* However, `equity_screener.py` calls `broker.client.multiquotes(symbols=payload)` **directly** (bypassing `BrokerAdapter`) with **all 30 Sensex stocks in one single request** and **no timeout** (OpenAlgo's Python SDK defaults to a **120-second** HTTP timeout).
+
+
+2. **Why OpenAlgo stalls on 30 symbols with Fyers:**
+* OpenAlgo's `/api/v1/multiquotes` endpoint notes that when a broker's depth/quote endpoint needs individual fetches, it fetches quotes sequentially under the hood.
+* Fyers' Standard Data API enforces a strict **5 requests/second** and **50 requests/minute** limit, so firing 30 depth lookups at once immediately triggers Fyers `429` rate-limit retries inside OpenAlgo—freezing `equity_screener.py` for 60–120 seconds (just like `strike_screener.py` froze earlier before we switched it to `urllib.request` with `timeout=6`).
+
+
+
+### What You Should Do
+
+* Apply the **10-symbol chunked `urllib` (`timeout=6`) fix** to `equity_screener.py`—it uses the exact same battle-tested pattern that made `strike_screener.py` finish in `< 0.5s` earlier.
+* Once `python3 equity_screener.py` prints the Sensex-30 table in ~2–3 seconds, commit and push that single file (`git add equity_screener.py && git commit -m "Fix: Chunk Sensex-30 multiquotes into 10-symbol batches with 6s timeout" && git push origin dev`), and you will not need any further changes.
+
+[Fyers API - OpenAlgo Integration Procedure](https://www.youtube.com/watch?v=d4PZ8yhcUbw) — This setup walkthrough explains how OpenAlgo routes market-data and order requests through the Fyers API bridge.
+---
 Both review rounds are complete—every single issue from today's live session is cleanly fixed, compile-checked, smoke-tested, and committed on `dev` (`d0a6256`).
 
 ### Two Quick Things to Wrap Up Today
