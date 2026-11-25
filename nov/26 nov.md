@@ -1,7 +1,3 @@
-Here is the exact `tmux` command and step-by-step morning launch sequence for **Thursday, Nov 26, 2026 (SENSEX Expiry Day)**. Keep OpenAlgo in its own isolated `tmux` session (`openalgo`) so it never gets killed when you restart or close your trading engine session (`algo_sess0`).
-
----
-
 ### Step 1: Start OpenAlgo Gateway (`09:05 AM IST`)
 
 Run this in WSL Ubuntu to launch OpenAlgo inside its dedicated `openalgo` session:
@@ -68,3 +64,40 @@ tmux attach -t algo_sess0
 * **Detach & leave both engines running hands-free:** `Ctrl + B`, then **`D`**.
 * **Re-attach later to check logs:** `tmux attach -t algo_sess0`
 * **Stop both engines cleanly after `01:30 PM`:** Attach to `algo_sess0`, press **`Ctrl + C`** in Window `0` and Window `1`, then `tmux kill-session -t algo_sess0`.
+---
+Here is a clean, practical `tmux` cheat sheet tailored specifically to your dual-session trading setup (`openalgo` + `algo_sess0`):
+
+---
+
+### 1. Session Management (From Normal Bash Prompt)
+
+| Action | Command |
+| --- | --- |
+| **List active sessions** | `tmux ls` |
+| **Attach to OpenAlgo** | `tmux attach -t openalgo` |
+| **Attach to Trading Engines** | `tmux attach -t algo_sess0` |
+| **Kill a specific session** | `tmux kill-session -t algo_sess0` |
+| **Kill all sessions (full reset)** | `tmux kill-server` |
+
+---
+
+### 2. Inside a `tmux` Session (Press `Ctrl + B`, Release, Then Press Key)
+
+| Action | Shortcut (`Ctrl + B` then...) |
+| --- | --- |
+| **Detach (leave running in background)** | `D` |
+| **Switch to Window 0 (`options`)** | `0` |
+| **Switch to Window 1 (`equity`)** | `1` |
+| **Cycle to next / previous window** | `N` / `P` |
+| **Interactive session & window picker** | `S` (use Arrow keys + Enter) |
+| **Scroll up through logs** | `[` (Arrow keys / `PgUp` to scroll, `Q` to exit scroll mode) |
+| **Create a new window in current session** | `C` |
+| **Close current window** | `&` (then press `Y`) or type `exit` |
+
+---
+
+### 3. Quick Troubleshooting Reminders
+
+* **Accidentally pressed `Ctrl + C` inside `openalgo`?** Type `python3 app.py` to restart OpenAlgo, then `Ctrl + B` $\rightarrow$ `D` to detach again.
+* **Terminal looks frozen / unresponsive?** Check if you accidentally entered scroll mode (`[` in top-right corner)—press **`Q`** or **`Esc`** to return to live output.
+* **Accidental `Ctrl + S` pause in terminal?** Press **`Ctrl + Q`** to unfreeze output.
