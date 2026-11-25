@@ -1,55 +1,45 @@
-Smart call. Since `SENSEX26NOV2684500CE` is already sitting at `₹473+` (`₹9,460+/lot`, nearly double your `₹5,000/lot` band) with a `₹1.10+` spread and no higher OTM strike left in `CANDIDATE_STRIKES`, restarting `v3_momentum_engine.py` cleanly with:
+**Yes — for every code-level issue**, with **one operational habit** needed alongside it:
 
-1. **WebSocket-first tick cache + `0.5s` REST throttle** in `broker_adapter.py` (so OpenAlgo stops throwing `429 Too Many Requests` when both engines run together),
-2. **6-strike OTM ladder (`[:15]`)** in `strike_screener.py` (so auto-rotation always has higher OTM strikes ready even on +2% rally days), and
-3. **Dynamic `0.5%` spread guard (`max(1.00, round(ltp * 0.005, 2))`)** in `v3_momentum_engine.py`
+### 1. What Is 100% Fixed in Code
 
-will put you back in a valid `₹4,000–₹5,000/lot` strike before `12:00 PM` with `1.5 hours` left in today's `11:30 AM – 01:30 PM` window.
+* **Sensex-30 `multiquotes` parsing (`equity_screener.py` & `broker_adapter.py`):** Both now parse OpenAlgo's `{"status": "success", "results": [{"symbol": ..., "data": {...}}]}` format cleanly, check `prevclose`/`close`, and require at least 15/30 stocks before declaring a trend.
+* **False `[CRITICAL FEED ALERT]` & Fyers `429` storms (`broker_adapter.py`):** Using `multiquotes` + a `5.0s` per-symbol cache and `0.6s` REST throttle prevents `get_quote()` from returning false `None` values while both engines run simultaneously.
+* **Big morning rallies outrunning strikes & spreads (`strike_screener.py` & `v3_momentum_engine.py`):** 12-strike single-batch OTM ladder (`< 0.5s`, zero external dependencies) + aligned `0.5%` dynamic spread guard across screener, auto-rotation, and breakout entry + restored 0-DTE Thursday expiry warning.
 
----
+### 2. The One Operational Habit Still Required (OpenAlgo Restart)
 
-### Step 1: Stop `v3_momentum_engine.py` Cleanly (`tmux` Window `0`)
+* Remember why `BFO` quotes returned `'results': []` at `12:23 PM` today: **OpenAlgo itself crashed/restarted mid-session**, and its internal Fyers `BFO` session cache hadn't warmed back up yet.
+* **Simple daily habit (`09:05 AM IST`):** Run OpenAlgo inside its own detached `tmux` session (`tmux new -s openalgo`) so a terminal close never kills it, and run `python3 strike_screener.py` once before `10:15 AM` to verify live `BFO` quotes are flowing before the `10:30 AM` Freeze Hour begins.
 
-1. Switch to Window `0` in `algo_sess0`: press **`Ctrl+B`** then **`0`**.
-2. Press **`Ctrl+C`** once to stop `v3_momentum_engine.py` cleanly (leave Window `1` `equity_intraday_engine.py` running untouched).
-
----
-
-### Step 2: Run This 1-Shot Patch for `broker_adapter.py`, `strike_screener.py`, & `v3_momentum_engine.py`
-
-Run this in `~/trading-projects/option-trailing-algo` to inspect and patch all three files cleanly:
-
-```bash
-cd ~/trading-projects/option-trailing-algo && source venv/bin/activate
-python3 -c '
-import re
-
-# 1. strike_screener.py: widen candidate slice from [:10] to [:15] so deeper OTM strikes are always included
-s = open("strike_screener.py").read()
-s_new = s.replace("[:10]", "[:15]")
-open("strike_screener.py", "w").write(s_new)
-print("strike_screener.py: widened strike ladder to [:15]")
-
-# 2. v3_momentum_engine.py: dynamic spread guard max(1.00, round(ltp * 0.005, 2))
-v = open("v3_momentum_engine.py").read()
-old_spread = "if spread > config.MAX_SPREAD:"
-new_spread = "effective_max_spread = max(config.MAX_SPREAD, round(ltp * 0.005, 2))\n        if spread > effective_max_spread:"
-if old_spread in v:
-    v = v.replace(old_spread, new_spread, 1)
-    v = v.replace("Spread ₹{spread:.2f} > Max ₹{config.MAX_SPREAD:.2f}", "Spread ₹{spread:.2f} > Max ₹{effective_max_spread:.2f}")
-    open("v3_momentum_engine.py", "w").write(v)
-    print("v3_momentum_engine.py: dynamic 0.5% spread cap applied")
-else:
-    print("v3_momentum_engine.py: MAX_SPREAD pattern check skipped (check line manually if needed)")
-'
-
-```
-
-*(Also inspect `get_quote` in `broker_adapter.py` with `grep -n -C 15 "def get_quote" broker_adapter.py` so we see its exact caching/throttle lines before patching it.)*
+Once Antigravity applies and commits those 5 cleanups to `dev`, you are completely set for tomorrow's session.
 
 ---
 
-### Step 3: Re-Run `strike_screener.py` & Restart `v3_momentum_engine.py`
+Antigravity’s Round 2 audit caught high-value cross-file edge cases—especially the `BrokerAdapter.get_multiquotes()` `results` schema mismatch, the OTM auto-rotation static `₹1.00` spread mismatch in `v3_momentum_engine.py`, the `3.0s` cache TTL vs. `equity_intraday_engine.py` polling cycle, and the accidental `.bak` commit.
 
-1. Run `python3 strike_screener.py` (with current SENSEX Spot `~84350` and `CE`), copy the new `SWEET SPOT` + next 2 OTM strikes (`₹200–₹250` band) into `CANDIDATE_STRIKES` in `config.py`, and save (`Ctrl+S`).
-2. Note: Because you are restarting `v3_momentum_engine.py` after `11:30 AM`, check whether `broker_adapter.fetch_freeze_hour_base()` hydrates the `10:30–11:30 AM` box automatically—if `v3_momentum_engine.py` builds `Base High/Low` live from `10:30–11:30 AM` ticks, restarting after `11:30 AM` will observe a fresh 3-minute consolidation window or require hydrating `Base High/Low` from `fetch_freeze_hour_base()`. Paste `grep -n -C 12 "def get_quote\|fetch_freeze_hour_base" broker_adapter.py` and I'll confirm in seconds!
+### Priority Verdict: What to Fix vs. What to Leave Alone
+
+| Priority | Item | Verdict & Action |
+| --- | --- | --- |
+| **1 (Must Fix)** | **`v3_momentum_engine.py` OTM Rotation Spread Parity (`L302`, `L324`)** | **Fix now.** Breakout entry allows `max(max_spread, round(c_close * 0.005, 2))` (`₹1.00–₹1.38`), while `OTM ROTATE UP/DOWN` still checks `cand_q["spread"] <= max_spread` (`₹1.00`). Align both so auto-rotation doesn't stall on `₹200–₹275` options. |
+| **2 (Must Fix)** | **`broker_adapter.py` `get_multiquotes()` Schema (`L393-L403`) & Cache TTL (`L342`, `L361`)** | **Fix now.** Update `get_multiquotes()` to unwrap OpenAlgo's `results: [{"symbol": ..., "data": {...}}]` format, and bump the `get_quote()` fallback cache TTL from `3.0s` to `5.0s` (with `threading.Lock`) so `equity_intraday_engine.py`'s 3-symbol polling loop (`~2.8s`) never triggers false `None` alerts. |
+| **3 (Should Fix)** | **`equity_screener.py` Safety (`prevclose`, `try/except`, breadth)** | **Fix now.** Add `try/except` around `multiquotes`, check `q.get("prev_close") or q.get("prevclose") or q.get("close") or q.get("open")` so overnight gaps aren't missed, and require `len(pct_moves) >= 15` (at least 50% of Sensex-30) before declaring a market regime. |
+| **4 (Should Fix)** | **`strike_screener.py` 0-DTE Warning & Ladder Filtering** | **Fix now.** Fire the 0-DTE warning whenever `selected_exp == today` (even if `len(distinct_expiries) == 1`), show `NO DEPTH` rows pre-market instead of hiding them, and exclude `WIDE SPREAD` strikes from the auto-rotation `ladder`. |
+| **5 (Cleanup)** | **Repo Hygiene (`.gitignore` + `git rm *.bak` + `.git/sequencer`)** | **Fix now.** Remove `v3_paper_trades_log.csv.legacy.1795580909.bak` from `dev`, add `*.bak` to `.gitignore`, and clean up the stale `.git/sequencer` lock in WSL. |
+
+*(Skip cross-process file locks between the two engines—since OpenAlgo WebSocket is primary and `5.0s` per-symbol cache absorbs REST fallback jitter cleanly, cross-process IPC locks add complexity without real benefit.)*
+
+---
+
+### Hand Off to Antigravity to Apply All 5 Clean Fixes
+
+Copy-paste this exact instruction into Antigravity so it patches, compiles, cleans up `.bak`, and commits cleanly to `dev`:
+
+> *"Apply the 5 fixes from your review on branch `dev`:*
+> *1. In `broker_adapter.py`: update `get_multiquotes()` to parse OpenAlgo's `results: [{'symbol': ..., 'data': {...}}]` schema (falling back cleanly on empty results), add a `threading.Lock` around `_quote_cache` / `_last_rest_quote_ts`, and extend the stale-quote fallback TTL in `get_quote()` from `3.0s` to `5.0s` (fast-path `<= 2.5s`).*
+> *2. In `v3_momentum_engine.py`: update `OTM ROTATE UP` and `OTM ROTATE DOWN` spread checks to use `max(max_spread, round(cand_q['ltp'] * 0.005, 2))` so rotation matches breakout entry and `strike_screener.py`.*
+> *3. In `equity_screener.py`: wrap `_fetch_sensex30_quotes()` in `try/except`, check `prev_close` / `prevclose` / `close` / `open` in order, and require `len(pct_moves) >= 15` before declaring a regime.*
+> *4. In `strike_screener.py`: trigger the 0-DTE expiry warning whenever `selected_exp == today` (even if only 1 expiry exists in DB), print `NO DEPTH` rows when `bid <= 0` or `ask <= 0` instead of skipping them, and exclude `WIDE SPREAD` strikes from `CANDIDATE_STRIKES` `ladder`.*
+> *5. Clean up repo hygiene: add `*.bak` to `.gitignore`, `git rm v3_paper_trades_log.csv.legacy.1795580909.bak`, compile-check all `.py` files, and commit to `dev`."*
+
+Once Antigravity finishes and pushes that commit to `dev`, your dual-engine setup is 100% locked and ready for tomorrow's **Thursday, Nov 26, 2026** SENSEX expiry session.
